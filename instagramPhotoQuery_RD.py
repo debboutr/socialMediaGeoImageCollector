@@ -1,0 +1,152 @@
+##################################################################################
+# Name: panoramioPhotoQuery.py
+# Description: Gets photos from panoramio website and converts them to point shapefile
+# Author: Tad Larsen
+# Date: May, 18 2015
+##################################################################################
+
+# import dependencies
+import urllib2,json
+import numpy as np
+import pandas as pd
+from django.utils.encoding import smart_str
+import time
+from datetime import datetime as dt
+#import geopandas as gpd
+#from shapely.geometry import Point
+##################################################################################
+# VARIABLES
+
+# set working directory
+workingPath = 'D:/Projects/Panoramio'
+
+# set ouput file path/name
+outFileName = workingPath + '/outputFromScript3.csv'
+
+# set bounding x,y values - DULUTH
+minX = -92.335981
+minY = 46.630695
+maxX = -91.946101
+maxY = 46.804721
+# set bounding x,y values - MILTOWN
+#minX = -88.231662
+#minY = 42.838153
+#maxX = -87.789201
+#maxY = 43.444837
+km = 0.00280723125
+dist = 313
+#  0.0449157  # 5 km
+#  0.02245785  # 2.5 km
+#  0.011228925  #1.25 km
+#  0.0056144625  # 0.625 km
+#  0.00280723125 # 0.3125 km
+##################################################################################
+# FUNCTIONS  5 km spacing 0.04491265  0.0449157  div by 2 : 0.022456325
+     
+def getPhotoCount(url):
+    # query website, parse JSON, and return photo count
+    urlResponse = urllib2.urlopen(url).read()
+    parsedResponse = json.loads(urlResponse)
+    queryCount = parsedResponse['data']
+#    print 'Query count returned: ' + str(len(queryCount))
+    return queryCount
+  
+klip = [] 
+recirc = []
+cols = ['latitude', 'longitude', 'date', 'time', 'username', 'title', 'tags', 'url']
+tbl = pd.DataFrame()
+token = '1771051239.ab103e5.7e013b99ce924cb7a894ecd0dd030be5'
+count = 0
+print 'Phase 1: '
+#len(np.arange(minX, maxX, km))
+#len(np.arange(minY, maxY, km))
+for xcoord in np.arange(minX, maxX, km):
+    for ycoord in np.arange(minY, maxY, km):
+        url = 'https://api.instagram.com/v1/media/search?lat=%s&lng=%s&distance=%s&access_token=%s&callback=?&count=500' % (ycoord, xcoord, dist, token)  # &callback=?&count=500
+        try:    
+            data = getPhotoCount(url)
+        except urllib2.HTTPError:
+            time.sleep(20)        
+            data = getPhotoCount(url)
+            print len(tbl)
+        count += 1
+        print count
+        if len(data) == 100:
+            print 'X: %s Y: %s has %s returns.' % (xcoord, ycoord, str(len(data)))
+        if type(data) is list:
+            for loc in range(len(data)):
+                chk = data[loc]['id']
+                if chk not in klip:
+                    ID = data[loc]['location']['id']
+                    if ID not in recirc:                
+                        recirc.append(ID)
+                    date = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%Y-%m-%d')
+                    time = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%H:%M:%S')
+                    latitude = data[loc]['location']['latitude']
+                    longitude = data[loc]['location']['longitude']
+                    title = smart_str(data[loc]['location']['name'])
+                    if 'videos' in data[loc]:
+                        url = data[loc]['videos']['standard_resolution']['url']
+                    else:    
+                        url = smart_str(data[loc]['images']['standard_resolution']['url'])
+                    username = smart_str(data[loc]['user']['username'])
+                    tags = smart_str(", ".join(data[0]['tags']))
+                    tbl = tbl.append(pd.DataFrame([[latitude, longitude, date, time, username, title, tags, url]], columns=cols), ignore_index=True)
+                    klip.append(chk)
+        else:
+            continue
+print 'Recirc: %s' % str(len(recirc))
+tbl2 = pd.DataFrame()
+print 'Phase 2: '
+count = 0
+for rec in recirc[:10]:
+    url = 'https://api.instagram.com/v1/locations/%s/media/recent?access_token=%s&count=500' % (rec, token)
+    try:    
+        data =getPhotoCount(url)
+    except urllib2.HTTPError:
+        time.sleep(20)        
+        data = getPhotoCount(url)
+    count += 1
+    print count
+    if type(data) is list:
+        for loc in range(len(data)):
+            chk = data[loc]['id']
+            if chk not in klip: 
+                ID = data[loc]['location']['id']
+                date = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%Y-%m-%d')
+                time = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%H:%M:%S')
+                latitude = data[loc]['location']['latitude']
+                longitude = data[loc]['location']['longitude']
+                title = smart_str(data[loc]['location']['name'])
+                if 'videos' in data[loc]:
+                    url = data[loc]['videos']['standard_resolution']['url']
+                else:    
+                    url = smart_str(data[loc]['images']['standard_resolution']['url'])
+                username = smart_str(data[loc]['user']['username'])
+                tags = smart_str(", ".join(data[0]['tags']))
+                tbl2 = tbl2.append(pd.DataFrame([[latitude, longitude, date, time, username, title, tags, url]], columns=cols), ignore_index=True)
+                klip.append(chk)
+    else:
+        continue
+    
+    
+chktbl = pd.concat([tbl,tbl2])
+            
+chktbl.to_csv(outFileName, index=False)
+print 'Recirc: %s' % str(len(recirc))
+print len(tbl)
+print len(tbl2)
+print len(chktbl)
+print outFileName
+#crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
+#geometry = [Point(xy) for xy in zip(chktbl.longitude, chktbl.latitude)]
+#geo_df = gpd.GeoDataFrame(chktbl, crs=crs, geometry=geometry)
+#
+#'%s.shp' % outFileName.split('.')[0]
+#
+#hop = tbl2.drop_duplicates('url')
+
+
+#look = pd.read_csv('D:/Projects/Panoramio/outputFromScript.csv')
+#
+#len(look.url.unique())
