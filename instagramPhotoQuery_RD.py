@@ -35,6 +35,7 @@ maxX = -87.789201
 maxY = 43.444837
 km = 0.0056144625  # 0.625
 dist = 625
+
 #  0.0449157  # 5 km #       5000
 #  0.02245785  # 2.5 km      2500
 #  0.011228925  #1.25 km     1250
@@ -76,7 +77,10 @@ for xcoord in np.arange(minX, maxX, km):
             for loc in range(len(data)):
                 chk = data[loc]['id']
                 if chk not in klip:
-                    ID = data[loc]['location']['id']
+                    if data[loc].has_key('location') and data[loc]['location'].has_key('id'):
+                        ID = data[loc]['location']['id']
+                    else:
+                        continue
                     if ID not in recirc:                
                         recirc.append(ID)
                     date = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%Y-%m-%d')
@@ -104,7 +108,7 @@ count = 0
 for rec in recirc:
     url = 'https://api.instagram.com/v1/locations/%s/media/recent?access_token=%s&count=500' % (rec, token)
     try:    
-        data =getPhotoCount(url)
+        data = getPhotoCount(url)
     except urllib2.HTTPError:
         time.sleep(20)        
         data = getPhotoCount(url)
@@ -114,7 +118,10 @@ for rec in recirc:
         for loc in range(len(data)):
             chk = data[loc]['id']
             if chk not in klip: 
-                ID = data[loc]['location']['id']
+                if data[loc].has_key('location') and data[loc]['location'].has_key('id'):
+                    ID = data[loc]['location']['id']
+                else:
+                    continue
                 date = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%Y-%m-%d')
                 t = dt.fromtimestamp(int(data[loc]['created_time'])).strftime('%H:%M:%S')
                 latitude = data[loc]['location']['latitude']
