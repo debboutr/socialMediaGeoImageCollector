@@ -86,9 +86,41 @@ import gdal
 from gdalconst import *
 filename = '/home/rick/Desktop/IMG_20160526_215459257.jpg'
 filename = '/media/rick/600ABCCF0ABCA386/Users/rick/Documents/macDunn/IMG_20160528_170902043.jpg'
-os.listdir('/media/rick/600ABCCF0ABCA386/Users/rick/Documents/Corvallis2Coast/Ride_05_29')
-sys.path.
-dataset = gdal.Open( filename, GA_ReadOnly )
+
+class photo_xy(object):
+    def __init__(self, name):
+        """Return a Customer object whose name is *name* and starting
+        balance is *balance*."""
+        self.name = name
+        dataset = gdal.Open(self.name, GA_ReadOnly)    
+        self.meta = dataset.GetMetadata()
+        self.lat = metadata['EXIF_GPSLatitude']
+        self.latlatRef = metadata['EXIF_GPSLatitudeRef']
+        self.lon = metadata['EXIF_GPSLongitude']
+        self.latlonRef = metadata['EXIF_GPSLongitudeRef']
+        self.latDD = latDD(self.lat)
+        self.lonDD = lonDD(self.lon)
+#    def latDD(self):
+#        D = int(self.lat[1:3])
+#        M = int(self.lat[6:8])
+#        S = int(self.lat[11:13])
+#        self.latDD = D + float(M)/60 + float(S)/3600
+#        return self.latDD
+#    def lonDD(self):
+#        D = int(self.lon[1:4])
+#        M = int(self.lon[7:9])
+#        S = int(self.lon[12:14])
+#        self.lonDD = D + float(M)/60 + float(S)/3600
+#        return self.lonDD
+
+photo = photo_xy(filename)
+photo.latDD
+photo.lonDD
+
+all_dir = '/media/rick/600ABCCF0ABCA386/Users/rick/Documents/Corvallis2Coast/Ride_05_29'
+for img in os.listdir('/media/rick/600ABCCF0ABCA386/Users/rick/Documents/Corvallis2Coast/Ride_05_29'):
+    filename = '{}/{}'.format(all_dir, img)
+dataset = gdal.Open( filename, GA_ReadOnly)
 metadata = dataset.GetMetadata()
 lat = metadata['EXIF_GPSLatitude']
 latRef = metadata['EXIF_GPSLatitudeRef']
@@ -131,4 +163,5 @@ def lonDD(x):
     return DD
 latDD = latDD(lat)
 lonDD = lonDD(lon)
+print '{}{}, {}{}'.format(latDD, latRef, lonDD, lonRef)
 lat.replace(" ", "").replace("(","").split(')')
