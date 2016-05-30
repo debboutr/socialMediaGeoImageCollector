@@ -1,8 +1,8 @@
 ##################################################################################
-# Name: panoramioPhotoQuery.py
-# Description: Gets photos from panoramio website and converts them to point shapefile
-# Author: Tad Larsen
-# Date: May, 18 2015
+# Name: photoQuery.py
+# Description: Gets photos from website and converts them to point shapefile
+# Author: Rick Debbout
+# Date: May, 28 2016
 ##################################################################################
 
 # import dependencies
@@ -18,7 +18,7 @@ from datetime import datetime as dt
 # VARIABLES
 
 # set working directory
-workingPath = 'D:/Projects/Panoramio'
+workingPath = '/media/rick/600ABCCF0ABCA386/Users/rick/Documents/instripTrick/ouput'
 
 # set ouput file path/name
 outFileName = workingPath + '/outputFromScript_MIL.csv'
@@ -43,7 +43,34 @@ dist = 625
 #  0.00280723125 # 0.3125 km 313
 ##################################################################################
 # FUNCTIONS  5 km spacing 0.04491265  0.0449157  div by 2 : 0.022456325
-     
+class getMedia(object):
+    """A customer of ABC Bank with a checking account. Customers have the
+    following properties:
+
+    Attributes:
+        name: A string representing the customer's name.
+        balance: A float tracking the current balance of the customer's account.
+    """
+    def __init__(self, name, balance=0.0):
+        """Return a Customer object whose name is *name* and starting
+        balance is *balance*."""
+        self.name = name
+        self.balance = balance
+
+    def withdraw(self, amount):
+        """Return the balance remaining after withdrawing *amount*
+        dollars."""
+        if amount > self.balance:
+            raise RuntimeError('Amount greater than available balance.')
+        self.balance -= amount
+        return self.balance
+
+    def deposit(self, amount):
+        """Return the balance remaining after depositing *amount*
+        dollars."""
+        self.balance += amount
+        return self.balance
+    
 def getPhotoCount(url):
     # query website, parse JSON, and return photo count
     urlResponse = urllib2.urlopen(url).read()
