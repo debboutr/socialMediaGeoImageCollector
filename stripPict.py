@@ -25,25 +25,32 @@ def getDD(string, ref, start = '(', stop = ')'):
         DD = DD * -1    
     return DD
 
-pic_dir = 'C:/Users/Rdebbout/Downloads/picDir'
-cols = ['latitude', 'longitude', 'image_location']
+pic_dir = '/media/rick/600ABCCF0ABCA386/Users/rick/Documents/Corvallis2Coast/Ride_05_29'
+cols = ['latitude', 'longitude', 'image_loc']
 tbl = pd.DataFrame()
 crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
 for img in os.listdir(pic_dir):
-    filename = '{}/{}'.format(pic_dir, img)
-    dataset = gdal.Open( filename, GA_ReadOnly)
-    metadata = dataset.GetMetadata()
-    lat = metadata['EXIF_GPSLatitude']
-    latRef = metadata['EXIF_GPSLatitudeRef']
-    lon = metadata['EXIF_GPSLongitude']
-    lonRef = metadata['EXIF_GPSLongitudeRef']
-    latitude = getDD(lat, latRef) 
-    longitude = getDD(lon, lonRef)
-    dataset = None 
-    tbl = tbl.append(pd.DataFrame([[latitude, longitude, filename]], columns=cols), ignore_index=True)
+    if '.jpg' in img:
+        filename = '{}/{}'.format(pic_dir, img)
+        try:
+            dataset = gdal.Open( filename, GA_ReadOnly)
+        except:
+            continue
+        metadata = dataset.GetMetadata()
+        if metadata.has_key('EXIF_GPSLatitude'):
+            lat = metadata['EXIF_GPSLatitude']
+            latRef = metadata['EXIF_GPSLatitudeRef']
+            lon = metadata['EXIF_GPSLongitude']
+            lonRef = metadata['EXIF_GPSLongitudeRef']
+        else:
+            continue
+        latitude = getDD(lat, latRef) 
+        longitude = getDD(lon, lonRef)
+        dataset = None 
+        tbl = tbl.append(pd.DataFrame([[latitude, longitude, filename]], columns=cols), ignore_index=True)
 geometry = [Point(xy) for xy in zip(tbl.longitude, tbl.latitude)]
 geo_df = gpd.GeoDataFrame(tbl, crs=crs, geometry=geometry)
-geo_df.to_file('%s/nora.shp' % pic_dir)
+geo_df.to_file('%s/shape/nora.shp' % pic_dir)
     
 #class stripper(object):
 #    def __init__(self, meta):
