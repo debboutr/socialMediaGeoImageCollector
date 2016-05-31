@@ -12,29 +12,31 @@ import pandas as pd
 from django.utils.encoding import smart_str
 import time
 from datetime import datetime as dt
-#import geopandas as gpd
-#from shapely.geometry import Point
+import geopandas as gpd
+from shapely.geometry import Point
+from datetime import datetime as dt
 ##################################################################################
 # VARIABLES
-
+startTime = dt.now()
 # set working directory
-workingPath = '/media/rick/600ABCCF0ABCA386/Users/rick/Documents/instripTrick/ouput'
+workingPath = 'D:/Projects/Panoramio'
 
 # set ouput file path/name
-outFileName = workingPath + '/outputFromScript_MIL.csv'
+outFileName = workingPath + '/DUL_313.csv'
 
 # set bounding x,y values - DULUTH
-#minX = -92.335981
-#minY = 46.630695
-#maxX = -91.946101
-#maxY = 46.804721
+minX = -92.335981
+minY = 46.630695
+maxX = -91.946101
+maxY = 46.804721
 # set bounding x,y values - MILTOWN
-minX = -88.231662
-minY = 42.838153
-maxX = -87.789201
-maxY = 43.444837
-km = 0.0056144625  # 0.625
-dist = 625
+#minX = -88.231662
+#minY = 42.838153
+#maxX = -87.789201
+#maxY = 43.444837
+#
+km = 0.00280723125  
+dist = 313
 
 #  0.0449157  # 5 km #       5000
 #  0.02245785  # 2.5 km      2500
@@ -43,33 +45,33 @@ dist = 625
 #  0.00280723125 # 0.3125 km 313
 ##################################################################################
 # FUNCTIONS  5 km spacing 0.04491265  0.0449157  div by 2 : 0.022456325
-class getMedia(object):
-    """A customer of ABC Bank with a checking account. Customers have the
-    following properties:
-
-    Attributes:
-        name: A string representing the customer's name.
-        balance: A float tracking the current balance of the customer's account.
-    """
-    def __init__(self, name, balance=0.0):
-        """Return a Customer object whose name is *name* and starting
-        balance is *balance*."""
-        self.name = name
-        self.balance = balance
-
-    def withdraw(self, amount):
-        """Return the balance remaining after withdrawing *amount*
-        dollars."""
-        if amount > self.balance:
-            raise RuntimeError('Amount greater than available balance.')
-        self.balance -= amount
-        return self.balance
-
-    def deposit(self, amount):
-        """Return the balance remaining after depositing *amount*
-        dollars."""
-        self.balance += amount
-        return self.balance
+#class getMedia(object):
+#    """A customer of ABC Bank with a checking account. Customers have the
+#    following properties:
+#
+#    Attributes:
+#        name: A string representing the customer's name.
+#        balance: A float tracking the current balance of the customer's account.
+#    """
+#    def __init__(self, name, balance=0.0):
+#        """Return a Customer object whose name is *name* and starting
+#        balance is *balance*."""
+#        self.name = name
+#        self.balance = balance
+#
+#    def withdraw(self, amount):
+#        """Return the balance remaining after withdrawing *amount*
+#        dollars."""
+#        if amount > self.balance:
+#            raise RuntimeError('Amount greater than available balance.')
+#        self.balance -= amount
+#        return self.balance
+#
+#    def deposit(self, amount):
+#        """Return the balance remaining after depositing *amount*
+#        dollars."""
+#        self.balance += amount
+#        return self.balance
     
 def getPhotoCount(url):
     # query website, parse JSON, and return photo count
@@ -177,10 +179,12 @@ print len(tbl)
 print len(tbl2)
 print len(chktbl)
 print outFileName
-#crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
-#geometry = [Point(xy) for xy in zip(chktbl.longitude, chktbl.latitude)]
-#geo_df = gpd.GeoDataFrame(chktbl, crs=crs, geometry=geometry)
-#
+#chktbl = pd.read_csv(outFileName)
+crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
+geometry = [Point(xy) for xy in zip(chktbl.longitude, chktbl.latitude)]
+geo_df = gpd.GeoDataFrame(chktbl, crs=crs, geometry=geometry)
+geo_df.to_file(workingPath + '/DUL_5_31.shp')
+print "elapsed time " + str(dt.now()-startTime)
 #'%s.shp' % outFileName.split('.')[0]
 #
 #hop = tbl2.drop_duplicates('url')
