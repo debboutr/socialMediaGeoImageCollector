@@ -72,15 +72,7 @@ for x in range(1,pages+1):
     picTbl = pd.concat([picTbl, addTbl])
     kDate = nextDate
     picTbl.to_csv('D:/Projects/Panoramio/flickPics_test2.csv', index=False)
-    
-    
-chk2 = []    
-for f in pics:
-    chk2.append(f['id'])
-    
-for x in chk:
-    if x not in chk2:
-        print x
+
 ##############################################################################################
    
 #len(pd.unique(picTbl.picID.tolist()))
