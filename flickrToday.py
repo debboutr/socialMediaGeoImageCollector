@@ -16,6 +16,7 @@ import datetime
 key = '08efe8fb64319b6dec58512d23408004'
 secret = '07b1081fb8daed0f'
 flickr_api.set_keys(api_key = key, api_secret = secret)
+
 # add a way to dynamically call this file into the script
 flickr_api.auth.AuthHandler.load('C:/Users/Rdebbout/Desktop/flickr_api_auth.txt')
 
@@ -30,6 +31,8 @@ minY = 42.838153
 maxX = -87.789201
 maxY = 43.444837
 box = '%s,%s,%s,%s' % (minX,minY,maxX,maxY)
+
+
 
 cols = ['latitude', 'longitude', 'picID', 'create_date', 'post_date', 'time', 'username', 'title', 'url', 'unix_time']
 pics = flickr_api.Photo.search(bbox=box, format='parsed-json')
@@ -47,17 +50,13 @@ def pics2table(flickrList):
         if not picID in gotten:
             try:
                 info = flickr_api.Photo.getInfo(f)
-            except:
-                
-                continue
-            minDate = info['posted']
-            post = dt.fromtimestamp(int(minDate)).strftime('%Y-%m-%d')
-            latitude = smart_str(info['location']['latitude'])
-            longitude = smart_str(info['location']['longitude'])        
-            title = smart_str(f['title'])
-            print f['owner']
-            username = smart_str(f['owner']['username'])
-            try:
+                minDate = info['posted']
+                post = dt.fromtimestamp(int(minDate)).strftime('%Y-%m-%d')
+                latitude = smart_str(info['location']['latitude'])
+                longitude = smart_str(info['location']['longitude'])        
+                title = smart_str(f['title'])
+                print f['owner']
+                username = smart_str(f['owner']['username'])
                 url = smart_str(f.getPhotoFile('Medium'))
             except:
                 continue
@@ -96,18 +95,18 @@ for f in pics:
     picID = smart_str(f['id'])
     if not picID in gotten:
         print picID
-xtras = 'date_upload, owner_name, original_format, geo, tags, media, url_m'
-xtras = 'geo'
+xtras = 'geo, tags, media, url_m'
+xtras = 'owner_name'
 xtras = ['date_upload', 'geo', 'url_m']
 
-pics = flickr_api.Photo.search(bbox=box, extras=xtras, format='parsed-json', page=x, max_upload_date=holdDate)
+pics = flickr_api.Photo.search(bbox=box, extras=xtras, format='parsed-json', max_upload_date=int(time.time()))
 f= pics[0]
 pics.info['pages']
 smart_str(f['id']) in gotten
 f['url_m']
 f['tags']
 f['media']
-f['owner']
+f['owner']['username']
 f['description']
 f['original_format']
 pics.info['location']['latitude']
@@ -117,6 +116,9 @@ f['posted']
 f['taken']
 f['geo']
 f['date_upload']
+f['username']
+f['farm']
+pics['photos']
 
 def pics2table2(flickrList):
     tbl = pd.DataFrame()
@@ -209,4 +211,40 @@ for x in range(1,pages+1):
         break
     picTbl = pd.concat([picTbl, addTbl])
     picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
-    
+
+
+###################################################################################
+
+picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+picTbl = pd.read_csv('D:/Projects/Panoramio/flickPics_MIL.csv')
+holdDate = picTbl.unix_time.min()
+x=1
+pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+pages = pics.info['pages']
+for x in range(1,pages+1):
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    print 'Page: %s' % x
+    addTbl = pics2table(pics)
+    if len(addTbl) == 0:
+        print 'broken'
+        holdDate = picTbl.unix_time.min()
+        break
+    picTbl = picTbl.append(addTbl)
+    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+
+picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+picTbl = pd.read_csv('D:/Projects/Panoramio/flickPics_MIL.csv')
+holdDate = picTbl.unix_time.min()
+x=1
+pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+pages = pics.info['pages']
+for x in range(1,pages+1):
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    print 'Page: %s' % x
+    addTbl = pics2table(pics)
+    if len(addTbl) == 0:
+        print 'broken'
+        holdDate = picTbl.unix_time.min()
+        break
+    picTbl = pd.concat([picTbl, addTbl])
+    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
