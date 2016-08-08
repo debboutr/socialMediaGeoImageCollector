@@ -13,12 +13,23 @@ from datetime import datetime as dt
 from django.utils.encoding import smart_str
 import datetime
 
-key = '08efe8fb64319b6dec58512d23408004'
-secret = '07b1081fb8daed0f'
+home = 'D:/Projects/Panoramio'
+
+key = 'b02389167452adc6203d953bdfe172eb'
+secret = 'f4854805c1a8164e'
 flickr_api.set_keys(api_key = key, api_secret = secret)
+a = flickr_api.auth.AuthHandler() #creates the AuthHandler object
+perms = "read" # set the required permissions
+url = a.get_authorization_url(perms)
+webbrowser.open_new_tab(url)
+#set from the <oauth_verifier> tag 
+a.set_verifier('d6ea0ed14bfaf185')
+a.save('{}/flickr_api_auth.txt'.format(home))
+
+
 
 # add a way to dynamically call this file into the script
-flickr_api.auth.AuthHandler.load('C:/Users/Rdebbout/Desktop/flickr_api_auth.txt')
+flickr_api.auth.AuthHandler.load('{}/flickr_api_auth.txt'.format(home))
 
 # set bounding x,y values - DULUTH
 #minX = -92.335981
@@ -83,13 +94,13 @@ for x in range(1,pages+1):
             break
         loopPages()
     picTbl = pd.concat([picTbl, addTbl])
-    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+    picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 
 ##############################################################################################
 dt.fromtimestamp(int(holdDate)).strftime('%Y-%m-%d')
 gotten = picTbl.picID.tolist()
 flickr_api.Photo.search(bbox=box, format='parsed-json', page=1, max_upload_date=holdDate)
-picTbl = pd.read_csv('D:/Projects/Panoramio/flickPics_MIL.csv')
+picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 all(x in picTbl.picID.values for x in addTbl.picID.values)
 for f in pics:
     picID = smart_str(f['id'])
@@ -153,13 +164,7 @@ addTbl = pics2table2(pics)
 picTbl = picTbl.drop_duplicates('picID')
 #len(pd.unique(picTbl.picID.tolist()))
 #new = picTbl.drop_duplicates('picID')
-#a = flickr_api.auth.AuthHandler() #creates the AuthHandler object
-#perms = "read" # set the required permissions
-#url = a.get_authorization_url(perms)
-#webbrowser.open_new_tab(url)
-##set from the <oauth_verifier> tag 
-#a.set_verifier('1412deda6763fddc')
-#a.save('C:/Users/Rdebbout/Desktop/flickr_api_auth.txt')
+
 ##pics = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, radius=1, format='parsed-json')
 #out = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, radius=1, format='parsed-json', page=24) 
 #out2 = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, accuracy=16, format='json')
@@ -178,7 +183,7 @@ def loopPages(picTbl, holdDate):
                 return None
             loopPages(picTbl, holdDate)
         picTbl = pd.concat([picTbl, addTbl])
-        picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+        picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
         
 final = loopPages(picTbl, holdDate)        
 
@@ -210,13 +215,13 @@ for x in range(1,pages+1):
         holdDate = picTbl.unix_time.min()
         break
     picTbl = pd.concat([picTbl, addTbl])
-    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+    picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 
 
 ###################################################################################
 
-picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
-picTbl = pd.read_csv('D:/Projects/Panoramio/flickPics_MIL.csv')
+picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
+picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 holdDate = picTbl.unix_time.min()
 x=1
 pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
@@ -230,10 +235,10 @@ for x in range(1,pages+1):
         holdDate = picTbl.unix_time.min()
         break
     picTbl = picTbl.append(addTbl)
-    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+    picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 
-picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
-picTbl = pd.read_csv('D:/Projects/Panoramio/flickPics_MIL.csv')
+picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
+picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 holdDate = picTbl.unix_time.min()
 x=1
 pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
@@ -247,4 +252,4 @@ for x in range(1,pages+1):
         holdDate = picTbl.unix_time.min()
         break
     picTbl = pd.concat([picTbl, addTbl])
-    picTbl.to_csv('D:/Projects/Panoramio/flickPics_MIL.csv', index=False)
+    picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
