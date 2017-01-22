@@ -18,9 +18,10 @@ from shapely.geometry import Point
 # VARIABLES
 startTime = dt.now()
 # set working directory
-workingPath = 'D:/Projects/Panoramio'
+#workingPath = 'D:/Projects/Panoramio'
+workingPath = '/home/rick/projects/ashtabula'
 # set ouput file path/name
-outFileName = workingPath + '/MIL_5000.csv'
+outFileName = workingPath + '/ash_5000.csv'
 # set bounding x,y values - DULUTH
 minX = -92.335981
 minY = 46.630695
@@ -31,9 +32,14 @@ minX = -88.231662
 minY = 42.838153
 maxX = -87.789201
 maxY = 43.444837
+# set bounding x,y values - Ashtabula
+minX = -80.9047045078156
+minY = 41.7975881835618
+maxX = -80.6410243157302
+maxY = 41.9532138083304
 # set distance for search area and increments to move points through bbox -- 
 # km set to estimated value of km in decimal degrees at the given latitude 
-km = 0.0056144625  
+km = 0.0056144625   
 dist = 625
 #  0.0449157        # 5 km #        5000
 #  0.02245785       # 2.5 km        2500
@@ -47,6 +53,7 @@ def getPhotoCount(url):
     # query website, parse JSON, and return list of images
     try:
         urlResponse = urllib2.urlopen(url).read()
+        parsedResponse = json.loads(urlResponse)
     except urllib2.HTTPError, err:
         if err.code == 429:
             time.sleep(4747)
@@ -56,7 +63,9 @@ def getPhotoCount(url):
             urlResponse = urllib2.urlopen(url).read()
         else:
             raise
-    parsedResponse = json.loads(urlResponse)
+    except ValueError:
+        return ()
+    
     queryCount = parsedResponse['data']
     return queryCount
   
@@ -149,7 +158,7 @@ chktbl.to_csv(outFileName, index=False)
 # Take csv and convert to shapefile
 #chktbl = pd.read_csv(outFileName)
 crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
-geometry = [Point(xy) for xy in zip(chktbl.longitude, chktbl.latitude)]
-geo_df = gpd.GeoDataFrame(chktbl, crs=crs, geometry=geometry)
-geo_df.to_file(workingPath + '/MIL_5000.shp')
+geometry = [Point(xy) for xy in zip(r.longitude, r.latitude)]
+geo_df = gpd.GeoDataFrame(r, crs=crs, geometry=geometry)
+geo_df.to_file(workingPath + '/ash_625.shp')
 print "elapsed time " + str(dt.now()-startTime)
