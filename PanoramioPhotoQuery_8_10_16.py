@@ -1,6 +1,10 @@
 ##################################################################################
 # Name: panoramioPhotoQuery.py
-# Description: Gets photos from panoramio website and converts them to point shapefile
+# Description: Gets photos from panoramio website and converts them to 
+# point shapefile
+# arcpy REQUIRED!!! the other script in this repo can be used to 
+# get around needing arcpy
+#
 # Author: Tad Larsen, edited by Jon Launspach
 # Date: August, 10 2016
 ##################################################################################
@@ -145,24 +149,3 @@ for row in sCur:
 endTime = datetime.datetime.now()
 
 print ' -> Processing time: ' + str(endTime-startTime)    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
