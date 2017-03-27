@@ -2,6 +2,9 @@
 """
 Created on Thu Jul 07 09:47:13 2016
 
+This script uses the flickrapi package to find images/videos from the 
+
+
 @author: Rdebbout
 """
 
