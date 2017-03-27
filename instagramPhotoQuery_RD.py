@@ -1,12 +1,12 @@
-##################################################################################
+###############################################################################
 # Name: photoQuery.py
 # Description: Gets photos from website and converts them to point shapefile
 # Author: Rick Debbout
 # Date: May, 28 2016
-##################################################################################
-# IMPORTANT Token website for authentication :  http://services.chrisriversdesign.com/instagram-token/
-# import dependencies
-import os
+###############################################################################
+# IMPORTANT!!
+# Website for Token: http://services.chrisriversdesign.com/instagram-token/
+
 import urllib2,json
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ from datetime import datetime as dt
 import geopandas as gpd
 from shapely.geometry import Point
 #from Tkinter import *
-from Tkinter import Tk,Label,Scrollbar,Listbox,Button,Y,RIGHT,END, W, IntVar, StringVar, Radiobutton
+from Tkinter import Tk, Label, Button, W, IntVar, StringVar, Radiobutton
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
 
@@ -49,7 +49,7 @@ class getDist():
     def __init__(self, master):
         self.master=master
         self.startwindow()
-        #self.b=0      # no need for this, directly store in the global variable
+        #self.b=0    # no need for this, directly store in the global variable
 
     def startwindow(self):
 
@@ -89,15 +89,16 @@ if __name__ == '__main__':
     window=getDist(root)
     root.mainloop()
     print dist
-    
-    f = askopenfilename(title='Select the file with UID and SITE_ID (*.csv,*.dbf,*.shp)',initialdir=os.getcwd())
+    s = 'Select the file with UID and SITE_ID (*.csv,*.dbf,*.shp)'
+    f = askopenfilename(title=s,initialdir='.')
     bb = gpd.read_file(f)
     #bb = gpd.read_file('/home/rick/projects/ashtabula/bbox.shp')
     geoser = bb.geometry.bounds.ix[bb.index[0]]
     minX,minY,maxX,maxY = geoser
     print minX,minY,maxX,maxY
     print f.split('.')[0].split('/')[-1]
-    path = askdirectory(title='Select directory where GRIDs are stored...',initialdir=os.getcwd())
+    s2 = 'Select directory where GRIDs are stored...'
+    path = askdirectory(title=s2,initialdir='.')
     
     dvals = {5000:0.0449157,625:0.0056144625,160:0.001403615625}
     km = dvals[dist]
@@ -113,8 +114,8 @@ if __name__ == '__main__':
     
     
       
-    klip = []  # isolate only unique photoIDs and keep only those that haven't been retreived
-    recirc = []  # keep location IDs and use to loop again by locationID to pick up more images
+    klip = []  # isolate only unique photoIDs and keep only those unretreived
+    recirc = []  # keep location IDs and loop by locationID for more images
     # build the table to store data
     cols = ['latitude', 'longitude', 'unique_ID', 'date', 'time', 'username', 'title', 'tags', 'url', 'video']
     tbl = pd.DataFrame()
@@ -190,7 +191,8 @@ if __name__ == '__main__':
                         url = smart_str(data[loc]['images']['standard_resolution']['url'])
                     username = smart_str(data[loc]['user']['username'])
                     tags = smart_str(", ".join(data[0]['tags']))
-                    tbl2 = tbl2.append(pd.DataFrame([[latitude, longitude, chk, date, t, username, title, tags, url, video]], columns=cols), ignore_index=True)
+                    it = [latitude, longitude, chk, date, t, username, title, tags, url, video]
+                    tbl2 = tbl2.append(pd.DataFrame([it], columns=cols), ignore_index=True)
                     klip.append(chk)
                     video = 'N'
         else:
@@ -204,7 +206,9 @@ if __name__ == '__main__':
     crs = {u'datum': u'WGS84', u'no_defs': True, u'proj': u'longlat'}
     geometry = [Point(xy) for xy in zip(r.longitude, r.latitude)]
     geo_df = gpd.GeoDataFrame(r, crs=crs, geometry=geometry)
-    geo_df.to_file(path + '/' + f.split('.')[0].split('/')[-1] + '_' + str(dist) + '.shp')
+    fn = '%s/%s_%s.shp' % (path, f.split('.')[0].split('/')[-1], str(dist))
+    geo_df.to_file(fn)
+    
     print "elapsed time " + str(dt.now()-startTime)
 
 ##############################################################################

@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime as dt
 from django.utils.encoding import smart_str
-import datetime
+import time
 
 home = 'D:/Projects/Panoramio'
 
@@ -45,14 +45,37 @@ box = '%s,%s,%s,%s' % (minX,minY,maxX,maxY)
 
 
 
-cols = ['latitude', 'longitude', 'picID', 'create_date', 'post_date', 'time', 'username', 'title', 'url', 'unix_time']
+cols = ['latitude', 'longitude', 'picID', 'create_date', 'post_date', 
+        'time', 'username', 'title', 'url', 'unix_time']
 pics = flickr_api.Photo.search(bbox=box, format='parsed-json')
 pages = pics.info['pages']
-holdDate = flickr_api.Photo.getInfo(pics[0])['posted'] # this is assuming that the first record returned is the most recent
+# this is assuming that the first record returned is the most recent
+holdDate = flickr_api.Photo.getInfo(pics[0])['posted'] 
 gotten = []
 # date and time are recorded from the time and date that they were taken, 
 # not the date that they were posted necessarily
 
+
+def loopPages(picTbl, holdDate):
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                   page=1, max_upload_date=holdDate)
+    pages = pics.info['pages']
+    for x in range(4,pages+1):
+        pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                       page=x, max_upload_date=holdDate)
+        print 'Page: %s' % x
+        addTbl = pics2table(pics)
+        if len(addTbl) == 0:
+            print 'broken'
+            holdDate = picTbl.unix_time.min()
+            if x == 1:
+                break
+                return None
+            loopPages(picTbl, holdDate)
+        picTbl = pd.concat([picTbl, addTbl])
+        picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
+        
+        
 def pics2table(flickrList):
     tbl = pd.DataFrame()
     count = 0
@@ -73,18 +96,21 @@ def pics2table(flickrList):
                 continue
             date = smart_str(info['taken'].split(' ')[0])
             t = smart_str(info['taken'].split(' ')[1])
-            tbl = tbl.append(pd.DataFrame([[latitude, longitude, picID, date, post, t, username, title, url, minDate]], columns=cols), ignore_index=True)
+            it = [latitude, longitude, picID, date, post, t, 
+                  username, title, url, minDate]
+            tbl = tbl.append(pd.DataFrame([it],columns=cols),ignore_index=True)
             gotten.append(picID)            
             print count
             count += 1   
     return tbl
-#pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate) 
-#picTbl, holdDate = pics2table(pics, tbl, holdDate)
-##############################################################################################
-# first loop through all of the original returns retaining the holdDate as the minimum to pas to next loop
+
+###############################################################################
+# first loop through all of the original returns retaining the holdDate as the 
+# minimum to pas to next loop
 picTbl = pd.DataFrame()
 for x in range(1,pages+1):
-    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                   page=x, max_upload_date=holdDate)
     print 'Page: %s' % x
     addTbl = pics2table(pics)
     if len(addTbl) == 0:
@@ -96,10 +122,11 @@ for x in range(1,pages+1):
     picTbl = pd.concat([picTbl, addTbl])
     picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 
-##############################################################################################
+###############################################################################
 dt.fromtimestamp(int(holdDate)).strftime('%Y-%m-%d')
 gotten = picTbl.picID.tolist()
-flickr_api.Photo.search(bbox=box, format='parsed-json', page=1, max_upload_date=holdDate)
+flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                        page=1, max_upload_date=holdDate)
 picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 all(x in picTbl.picID.values for x in addTbl.picID.values)
 for f in pics:
@@ -110,7 +137,8 @@ xtras = 'geo, tags, media, url_m'
 xtras = 'owner_name'
 xtras = ['date_upload', 'geo', 'url_m']
 
-pics = flickr_api.Photo.search(bbox=box, extras=xtras, format='parsed-json', max_upload_date=int(time.time()))
+pics = flickr_api.Photo.search(bbox=box, extras=xtras, format='parsed-json', 
+                               max_upload_date=int(time.time()))
 f= pics[0]
 pics.info['pages']
 smart_str(f['id']) in gotten
@@ -162,28 +190,8 @@ addTbl = pics2table2(pics)
 
 #holdDate = 1261705750
 picTbl = picTbl.drop_duplicates('picID')
-#len(pd.unique(picTbl.picID.tolist()))
-#new = picTbl.drop_duplicates('picID')
 
-##pics = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, radius=1, format='parsed-json')
-#out = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, radius=1, format='parsed-json', page=24) 
-#out2 = flickr_api.Photo.search(lat=46.789748, lon=-92.101478, accuracy=16, format='json')
-def loopPages(picTbl, holdDate):
-    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=1, max_upload_date=holdDate)
-    pages = pics.info['pages']
-    for x in range(4,pages+1):
-        pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
-        print 'Page: %s' % x
-        addTbl = pics2table(pics)
-        if len(addTbl) == 0:
-            print 'broken'
-            holdDate = picTbl.unix_time.min()
-            if x == 1:
-                break
-                return None
-            loopPages(picTbl, holdDate)
-        picTbl = pd.concat([picTbl, addTbl])
-        picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
+
         
 final = loopPages(picTbl, holdDate)        
 
@@ -197,7 +205,8 @@ def findUniquereturns(flickrList):
 def loopUniqueVals(pages):
     for x in range(1,pages+1):
         print x
-        pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+        pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                       page=x, max_upload_date=holdDate)
         findUniquereturns(pics)
     
 loopUniqueVals(pages)    
@@ -207,7 +216,8 @@ len(set(gotten))
 
 
 for x in range(1,pages+1):
-    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                   page=x, max_upload_date=holdDate)
     print 'Page: %s' % x
     addTbl = pics2table(pics)
     if len(addTbl) == 0:
@@ -218,16 +228,18 @@ for x in range(1,pages+1):
     picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 
 
-###################################################################################
+###############################################################################
 
 picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 holdDate = picTbl.unix_time.min()
 x=1
-pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                               page=x, max_upload_date=holdDate)
 pages = pics.info['pages']
 for x in range(1,pages+1):
-    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                   page=x, max_upload_date=holdDate)
     print 'Page: %s' % x
     addTbl = pics2table(pics)
     if len(addTbl) == 0:
@@ -241,10 +253,12 @@ picTbl.to_csv('{}/flickPics_MIL.csv'.format(home), index=False)
 picTbl = pd.read_csv('{}/flickPics_MIL.csv'.format(home))
 holdDate = picTbl.unix_time.min()
 x=1
-pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                               page=x, max_upload_date=holdDate)
 pages = pics.info['pages']
 for x in range(1,pages+1):
-    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', page=x, max_upload_date=holdDate)
+    pics = flickr_api.Photo.search(bbox=box, format='parsed-json', 
+                                   page=x, max_upload_date=holdDate)
     print 'Page: %s' % x
     addTbl = pics2table(pics)
     if len(addTbl) == 0:
