@@ -8,7 +8,7 @@ the other scripts grab images off of either Instagram or Flickr within a boundin
 
 flickr2.py uses a different python module, flickrapi, which can return a more complete dictionary and reduces the number of calls to Flickr, making the colection process faster.
 
-![readme](https://cloud.githubusercontent.com/assets/7052993/24336882/fbffa3de-124a-11e7-9a1b-79b7092d655d.png)
+![readme](https://cloud.githubusercontent.com/assets/7052993/24336890/1c29c2c0-124b-11e7-8d8a-41930e335320.png)
 
 Traceback (most recent call last):
 
