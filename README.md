@@ -1,39 +1,21 @@
 # socialMediaGeoImageCollector
 
-grab social media photos and videos by location 
+### Collect social media photos and videos by location from flickr, instagram, and panaramio
 
-stripPict gets exif data using gdal for a point value from a picture
+These scripts search for public media within a given bounding box.
 
-the other scripts grab images off of either Instagram or Flickr within a bounding box
+## Necessary Packages
+* geopandas
+* django
+* requests
+* pandas
+* urllib2
 
-flickr2.py uses a different python module, flickrapi, which can return a more complete dictionary and reduces the number of calls to Flickr, making the colection process faster.
+_if collecting from flickr:_
+* flickrapi
+
+_flickr2.py uses a different python module, flickrapi, which can return a more complete dictionary and reduces the number of calls to Flickr, making the colection process faster._
 
 ![readme](https://cloud.githubusercontent.com/assets/7052993/24336890/1c29c2c0-124b-11e7-8d8a-41930e335320.png)
 
-Traceback (most recent call last):
-
-  File "<ipython-input-14-b2840fc0b2da>", line 4, in <module>
-    data = getPhotoCount(url)
-
-  File "<ipython-input-3-09804a657fd2>", line 4, in getPhotoCount
-    urlResponse = urllib2.urlopen(url).read()
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 154, in urlopen
-    return opener.open(url, data, timeout)
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 435, in open
-    response = meth(req, response)
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 548, in http_response
-    'http', request, response, code, msg, hdrs)
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 473, in error
-    return self._call_chain(*args)
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 407, in _call_chain
-    result = func(*args)
-
-  File "C:\Users\Hank\Anaconda2\envs\dul\lib\urllib2.py", line 556, in http_error_default
-    raise HTTPError(req.get_full_url(), code, msg, hdrs, fp)
-
-HTTPError: -
+#### stripPict.py gets exif data using gdal for a point value from a picture
